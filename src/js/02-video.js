@@ -5,10 +5,9 @@ var throttle = require('lodash.throttle');
 
 player.on('timeupdate',
     throttle((data) => {
-    // function (data) {
-    videoplayerCurrentTime = data.seconds;
+    const videoplayerCurrentTime = data.seconds;
     localStorage.setItem('seconds', videoplayerCurrentTime);
-    console.log(localStorage.getItem('seconds'));
+    // console.log(localStorage.getItem('seconds'));
     }, 1000)
 );
 
