@@ -2,90 +2,47 @@ var throttle = require('lodash.throttle');
 const form = document.querySelector(".feedback-form");
 const emailInput = document.querySelector(".feedback-form input");
 const textareaInput = document.querySelector(".feedback-form textarea");
-const formInputs = [emailInput, textareaInput];
-const feedbackFormState = {};
-// const currentMail = localStorage.getItem('email');
-// const currentMessage = localStorage.getItem('message');
+const LOCALSTORAGE_KEY = "feedback-form-state";
+const objKeysFields = {};
 
-// localStorage.setItem('email', "mail");
-// localStorage.setItem('message', "");
+updateInputs();
+
+form.addEventListener("input", throttle(saveLocalValues, 500));
+form.addEventListener("submit", onSubmit);
 
 
-// if (currentMail !== "" || currentMessage !== "") {
-//     emailInput.value = currentMail;
-//     textareaInput.value = currentMessage;
-//     console.log(emailInput.value);
-// };
+function saveLocalValues(evt) { 
+    evt.preventDefault();
+    
+    objKeysFields.email = emailInput.value;
+    objKeysFields.message = textareaInput.value;
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(objKeysFields));
+};
 
-formInputs.forEach((elem) => {
-    const savedState = JSON.parse(localStorage.getItem("feedback-form-state") || {});
-    elem.value = savedState[elem.name] || "";
-});
+function onSubmit(evt) { 
+    evt.preventDefault();
 
-formInputs.forEach((elem) => elem.addEventListener("input", throttle((event) => {
-    event.preventDefault();
-    feedbackFormState[elem.name] = elem.value;
-    localStorage.setItem("feedback-form-state", JSON.stringify(feedbackFormState));
-    }, 500)));
+    const input = getLocalStorageItem(LOCALSTORAGE_KEY);
 
-form.addEventListener("submit", (event) => { 
-    event.preventDefault();
+    console.log(input);
+    updateInputs();
+    localStorage.removeItem(LOCALSTORAGE_KEY);
     form.reset();
-    localStorage.clear();
-});
+};
 
-// formInputs.addEventListener("input", throttle((event) => {
-//     event.preventDefault();
-    
+function updateInputs() {
+    const input = getLocalStorageItem(LOCALSTORAGE_KEY);
 
-//     const formElements = event.currentTarget.elements;
-//     localStorage.setItem('email', formElements.email.value);
-//     localStorage.setItem('message', formElements.message.value);
-//     // console.log(formElements.email.value, formElements.message.value);
-//     console.log(formElements);
+    const { email = "", message = ""} = input || {};
+    emailInput.value = email;
+    textareaInput.value = message;
+};
 
-
-    // if (localStorage.getItem('email') !== "" || localStorage.getItem('message') !== "") {
-    //     emailInput.value = localStorage.getItem('email');
-    //     textareaInput.value = localStorage.getItem('message');
-    //     console.log(emailInput.value);
-    // } else { 
-    //     const formElements = event.currentTarget.elements;
-    //     localStorage.setItem('email', formElements.email.value);
-    //     localStorage.setItem('message', formElements.message.value);
-        
-// }, 500));
-
-
-// 
-    
-// function OnFormSubmit(event) {
-//     event.preventDefault();
-//     const formElements = event.currentTarget.elements;
-//     const currentMail = localStorage.getItem('email');
-//     const currentMessage = localStorage.getItem('message');
-
-//     if (currentMail !== '' || currentMessage !== '') {
-        
-
-
-//     // const mail = formElements.email.value;
-//     // const message = formElements.message.value;
-//     localStorage.setItem('email', formElements.email.value);
-//     localStorage.setItem('message', formElements.message.value);
-//     const currentMail = localStorage.getItem('email');
-//     const currentMessage = localStorage.getItem('message');
-//     console.log(currentMail);
-//     console.log(currentMessage);
- 
-//     if (currentMail === '' || currentMessage === '') {
-//         console.log("foo");
-//     } else {
-//         mail = localStorage.email;
-//         text = localStorage.message;
-//         const formObj = { currentMail, currentMessage };
-//         console.log(formObj);
-//     };
-//     form.reset();
-    // localStorage.clear();
-// };
+function getLocalStorageItem(key) {
+    try {
+        const serializedState = localStorage.getItem(key);
+        return serializedState === null ? undefined : JSON.parse(serializedState);
+    } catch (error) {
+        console.error("Get state error: ", error.message);
+    }
+};
